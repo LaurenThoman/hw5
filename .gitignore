@@ -6,3 +6,6 @@ schedwork-driver
 wordle
 schedwork
 *.o
+wordle
+schedwork
+*.o

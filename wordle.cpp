@@ -41,7 +41,7 @@ void wordleHelper(int idx,
                   const set<string>& dict)
 {
     int n = cur.size();
-    if(idx==n) {
+    if(idx == n) {
         if(floats.empty() && dict.count(cur))
             out.insert(cur);
         return;
