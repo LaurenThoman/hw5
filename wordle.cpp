@@ -12,12 +12,11 @@
 #include "dict-eng.h"
 using namespace std;
 
-// prototype
-void wordleHelper(int idx,
-                  string& cur,
-                  set<string>& out,
+// prototype for the recursive helper
+void wordleHelper(int pos,
+                  string& current,
+                  set<string>& output,
                   string floats,
-                  int blanks,
                   const set<string>& dict);
 
 set<string> wordle(const string& in,
@@ -26,48 +25,49 @@ set<string> wordle(const string& in,
 {
     set<string> output;
     string current = in;
-    int blanks = 0;
-    for(int i = 0; i < (int)in.size(); ++i)
-        if(in[i]=='-') blanks++;
-    wordleHelper(0, current, output, floating, blanks, dict);
+    // kick off recursion (no loop here!)
+    wordleHelper(0, current, output, floating, dict);
     return output;
 }
 
-void wordleHelper(int idx,
-                  string& cur,
-                  set<string>& out,
+void wordleHelper(int pos,
+                  string& current,
+                  set<string>& output,
                   string floats,
-                  int blanks,
                   const set<string>& dict)
 {
-    int n = cur.size();
-    if(idx == n) {
-        if(floats.empty() && dict.count(cur))
-            out.insert(cur);
+    int n = (int)current.size();
+    if (pos == n) {
+        if (floats.empty() && dict.count(current))
+            output.insert(current);
         return;
     }
-    if(cur[idx] != '-') {
-        wordleHelper(idx+1, cur, out, floats, blanks, dict);
+    if (current[pos] != '-') {
+        wordleHelper(pos+1, current, output, floats, dict);
         return;
     }
-    if(blanks == (int)floats.size()) {
-        for(int i=0; i<(int)floats.size(); ++i) {
+    int remainingSlots = n - pos;
+    if (remainingSlots == (int)floats.size()) {
+        // must place all floats
+        for (int i = 0; i < (int)floats.size(); ++i) {
             char c = floats[i];
-            cur[idx] = c;
-            string nextF = floats;
-            nextF.erase(i,1);
-            wordleHelper(idx+1, cur, out, nextF, blanks-1, dict);
-            cur[idx] = '-';
+            current[pos] = c;
+            string nextFloats = floats;
+            nextFloats.erase(i, 1);
+            wordleHelper(pos+1, current, output, nextFloats, dict);
+            current[pos] = '-';
         }
     }
     else {
-        for(char c='a'; c<='z'; ++c){
-            string nextF = floats;
-            auto p = nextF.find(c);
-            if(p!=string::npos) nextF.erase(p,1);
-            cur[idx] = c;
-            wordleHelper(idx+1, cur, out, nextF, blanks-1, dict);
-            cur[idx] = '-';
+        // any letter a–z
+        for (char c = 'a'; c <= 'z'; ++c) {
+            string nextFloats = floats;
+            auto p = nextFloats.find(c);
+            if (p != string::npos)
+                nextFloats.erase(p,1);
+            current[pos] = c;
+            wordleHelper(pos+1, current, output, nextFloats, dict);
+            current[pos] = '-';
         }
     }
 }
