@@ -11,7 +11,14 @@
 #include "dict-eng.h"
 using namespace std;
 
-// Recursive helper—exactly 2 loops in here
+// Quickly test if any word in dict starts with pref
+bool prefixExists(const set<string>& dict, const string& pref) {
+    auto it = dict.lower_bound(pref);
+    return it != dict.end()
+        && it->compare(0, pref.size(), pref) == 0;
+}
+
+// Recursive helper—exactly 2 loops here
 void wordleHelper(int pos,
                   string& cur,
                   set<string>& out,
@@ -24,16 +31,27 @@ void wordleHelper(int pos,
             out.insert(cur);
         return;
     }
+
     if (cur[pos] != '-') {
+        // prune even fixed letters
+        string pref = cur.substr(0, pos+1);
+        if (!prefixExists(dict, pref)) return;
+
         wordleHelper(pos+1, cur, out, floats, dict);
         return;
     }
+
     int remain = n - pos;
     if (remain == (int)floats.size()) {
         // must place exactly all floating letters
         for (int i = 0; i < (int)floats.size(); ++i) {
             char c = floats[i];
             cur[pos] = c;
+            string pref = cur.substr(0, pos+1);
+            if (!prefixExists(dict, pref)) {
+                cur[pos] = '-';
+                continue;
+            }
             string nextF = floats;
             nextF.erase(i,1);
             wordleHelper(pos+1, cur, out, nextF, dict);
@@ -44,6 +62,11 @@ void wordleHelper(int pos,
         // can place any letter a–z
         for (char c = 'a'; c <= 'z'; ++c) {
             cur[pos] = c;
+            string pref = cur.substr(0, pos+1);
+            if (!prefixExists(dict, pref)) {
+                cur[pos] = '-';
+                continue;
+            }
             string nextF = floats;
             auto p = nextF.find(c);
             if (p != string::npos) nextF.erase(p,1);
